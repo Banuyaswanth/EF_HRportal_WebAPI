@@ -24,76 +24,54 @@ namespace EF_HRportal_WebAPI.Controllers
         [HttpPost("TimeIn/{EmpId}")]
         public async Task<IActionResult> TimeIn([FromRoute] int EmpId)
         {
-            try
+            var Employee = await repository.GetEmployeeByIdAsync(EmpId);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-                if (Employee == null)
-                {
-                    return NotFound("Employee with the given does not exist..!!");
-                }
-                var lastTimeInDetails = await repository.EmployeeTimeInAsync(EmpId);
-                if(lastTimeInDetails == null)
-                {
-                    return BadRequest("Unable to TimeIn. Please try again");
-                }
-                return Ok(new { lastTimeInId = lastTimeInDetails.Id, Message = "Last TimeIn record is stored with the primary key as '" + lastTimeInDetails.Id + "'" });
-
+                return NotFound("Employee with the given does not exist..!!");
             }
-            catch (Exception ex)
+            var lastTimeInDetails = await repository.EmployeeTimeInAsync(EmpId);
+            if (lastTimeInDetails == null)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Unable to TimeIn. Please try again");
             }
+            return Ok(new { lastTimeInId = lastTimeInDetails.Id, Message = "Last TimeIn record is stored with the primary key as '" + lastTimeInDetails.Id + "'" });
         }
 
         [HttpPut("TimeOut/{EmpId}/{LastTimeInID}")]
         public async Task<IActionResult> TimeOut([FromRoute] int EmpId, [FromRoute] int LastTimeInID)
         {
-            try
+            var Employee = await repository.GetEmployeeByIdAsync(EmpId);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-                if (Employee == null)
-                {
-                    return NotFound("Employee with the given ID does not exist");
-                }
-                var attendanceRecord = await repository.GetAttendanceRecordAsync(LastTimeInID);
-                if (attendanceRecord == null)
-                {
-                    return NotFound("Attendance record with the given LastTimeInID does not exist..!!");
-                }
-                if(attendanceRecord.EmpId != EmpId)
-                {
-                    return BadRequest("Attendance record does not belong to the given Employee ID");
-                }
-                var updatedAttendanceRecord = await repository.EmployeeTimeOutAsync(attendanceRecord);
-                return Ok(updatedAttendanceRecord);
+                return NotFound("Employee with the given ID does not exist");
             }
-            catch(Exception ex)
+            var attendanceRecord = await repository.GetAttendanceRecordAsync(LastTimeInID);
+            if (attendanceRecord == null)
             {
-                return BadRequest(ex.Message);
+                return NotFound("Attendance record with the given LastTimeInID does not exist..!!");
             }
+            if (attendanceRecord.EmpId != EmpId)
+            {
+                return BadRequest("Attendance record does not belong to the given Employee ID");
+            }
+            var updatedAttendanceRecord = await repository.EmployeeTimeOutAsync(attendanceRecord);
+            return Ok(updatedAttendanceRecord);
         }
 
         [HttpGet("GetAttendance/{EmpId}")]
         public async Task<IActionResult> GetAttendance([FromRoute] int EmpId)
         {
-            try
+            var Employee = await repository.GetEmployeeByIdAsync(EmpId);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-                if (Employee == null)
-                {
-                    return NotFound("Employee with the given ID does not exist!!");
-                }
-                var attendance = await repository.GetAttendanceOfEmployeeAsync(EmpId);
-                if (attendance.Count == 0)
-                {
-                    return Ok("No attendance records to display for the employee");
-                }
-                return Ok(attendance);
+                return NotFound("Employee with the given ID does not exist!!");
             }
-            catch(Exception ex)
+            var attendance = await repository.GetAttendanceOfEmployeeAsync(EmpId);
+            if (attendance.Count == 0)
             {
-                return BadRequest(ex.Message) ;
+                return Ok("No attendance records to display for the employee");
             }
+            return Ok(attendance);
         }
     }
 }

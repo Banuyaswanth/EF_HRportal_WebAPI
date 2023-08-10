@@ -26,127 +26,92 @@ namespace EF_HRportal_WebAPI.Controllers
         [ValidateModel]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginDetails)
         {
-            try
+            var Employee = await repository.GetEmployeeByEmailAsync(loginDetails.Email);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByEmailAsync(loginDetails.Email);
-                if (Employee == null)
-                {
-                    return NotFound("Invalid Username!!");
-                }
-                if (Employee.Password != loginDetails.Password)
-                {
-                    return BadRequest("Invalid Password!!");
-                }
-                return Ok("Login Successful");
+                return NotFound("Invalid Username!!");
             }
-            catch (Exception ex)
+            if (Employee.Password != loginDetails.Password)
             {
-                return BadRequest(ex.Message);
+                return BadRequest("Invalid Password!!");
             }
+            return Ok("Login Successful");
         }
 
         [HttpGet("/api/SearchEmployee/{name}")]
         public async Task<IActionResult> SearchEmployee([FromRoute] string name)
         {
-            try
+            var employeesDomainList = await repository.SearchEmployeeByNameAsync(name);
+            if (employeesDomainList.Count == 0)
             {
-                var employeesDomainList = await repository.SearchEmployeeByNameAsync(name);
-                if(employeesDomainList.Count == 0)
-                {
-                    return NotFound("No employee can be found with the given name");
-                }
-                var employeesDTOList = mapper.Map<List<EmployeeDetailsDTO>>(employeesDomainList);
-                return Ok(employeesDTOList);
+                return NotFound("No employee can be found with the given name");
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var employeesDTOList = mapper.Map<List<EmployeeDetailsDTO>>(employeesDomainList);
+            return Ok(employeesDTOList);
         }
 
         [HttpGet("/api/GetPersonalDetails/{EmpId}")]
         public async Task<IActionResult> GetPersonalDetails([FromRoute] int EmpId)
         {
-            try
+            var Employee = await repository.GetEmployeeByIdAsync(EmpId);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-                if (Employee == null)
-                {
-                    return NotFound("Cannot fetch the details of an employee who does not exist..!! Provide a valid Employee ID to fetch the Personal Details");
-                }
-                var PersonalDetails = mapper.Map<PersonalDetailsDTO>(Employee);
-                return Ok(PersonalDetails);
+                return NotFound("Cannot fetch the details of an employee who does not exist..!! Provide a valid Employee ID to fetch the Personal Details");
             }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var PersonalDetails = mapper.Map<PersonalDetailsDTO>(Employee);
+            return Ok(PersonalDetails);
         }
 
         [HttpPut("UpdatePersonalDetails/{EmpId}")]
         [ValidateModel]
-        public async Task<IActionResult> UpdatePersonalDetails([FromRoute] int EmpId , [FromBody] UpdatePersonalDetailsDTO newDetails)
+        public async Task<IActionResult> UpdatePersonalDetails([FromRoute] int EmpId, [FromBody] UpdatePersonalDetailsDTO newDetails)
         {
-            try
+            var Employee = await repository.GetEmployeeByIdAsync(EmpId);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-                if(Employee == null)
-                {
-                    return NotFound("Cannot update the details of a non existent Employee..!");
-                }
-                var updatedEmployeeDomain = await repository.UpdatePersonalDetailsAsync(Employee, newDetails);
-                var updatedEmployeeDTO = mapper.Map<PersonalDetailsDTO>(updatedEmployeeDomain);
-                var timeLineAction = new Timelinedetail
-                {
-                    EmpId = EmpId,
-                    Action = "Updated personal details",
-                    DateOfAction = DateTime.Now
-                };
-                await repository.AddTimeLineAsync(timeLineAction);
-                return Ok(updatedEmployeeDTO);
+                return NotFound("Cannot update the details of a non existent Employee..!");
             }
-            catch (Exception ex)
+            var updatedEmployeeDomain = await repository.UpdatePersonalDetailsAsync(Employee, newDetails);
+            var updatedEmployeeDTO = mapper.Map<PersonalDetailsDTO>(updatedEmployeeDomain);
+            var timeLineAction = new Timelinedetail
             {
-                return BadRequest(ex.Message);
-            }
+                EmpId = EmpId,
+                Action = "Updated personal details",
+                DateOfAction = DateTime.Now
+            };
+            await repository.AddTimeLineAsync(timeLineAction);
+            return Ok(updatedEmployeeDTO);
         }
 
         [HttpPut("ChangePassword/{EmpId}")]
         public async Task<IActionResult> ChangeLoginPassword([FromRoute] int EmpId, [FromBody] ChangePasswordRequestDTO newCredentials)
         {
-            try
+            var Employee = await repository.GetEmployeeByIdAsync(EmpId);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-                if (Employee == null)
-                {
-                    return NotFound("Employee with the given ID does not exist..!! Cannot change the password");
-                }
-                if (Employee.Email != newCredentials.Email)
-                {
-                    return BadRequest("Incorrect Email entered!!");
-                }
-                if (Employee.Password != newCredentials.OldPassword)
-                {
-                    return BadRequest("Provide the correct old password!!");
-                }
-                if (Employee.Password == newCredentials.NewPassword)
-                {
-                    return BadRequest("New password cannot be the same as the old password");
-                }
-                var updatedEmployeeDetails = await repository.ChangeEmployeePasswordAsync(Employee, newCredentials);
-                var timeLineAction = new Timelinedetail
-                {
-                    EmpId = EmpId,
-                    Action = "Changed the Password",
-                    DateOfAction = DateTime.Now
-                };
-                await repository.AddTimeLineAsync(timeLineAction);
-                return Ok("Successfully changed the password of Employee login");
+                return NotFound("Employee with the given ID does not exist..!! Cannot change the password");
             }
-            catch (Exception ex) 
-            { 
-                return BadRequest(ex.Message);
+            if (Employee.Email != newCredentials.Email)
+            {
+                return BadRequest("Incorrect Email entered!!");
             }
+            if (Employee.Password != newCredentials.OldPassword)
+            {
+                return BadRequest("Provide the correct old password!!");
+            }
+            if (Employee.Password == newCredentials.NewPassword)
+            {
+                return BadRequest("New password cannot be the same as the old password");
+            }
+            var updatedEmployeeDetails = await repository.ChangeEmployeePasswordAsync(Employee, newCredentials);
+            var timeLineAction = new Timelinedetail
+            {
+                EmpId = EmpId,
+                Action = "Changed the Password",
+                DateOfAction = DateTime.Now
+            };
+            await repository.AddTimeLineAsync(timeLineAction);
+            return Ok("Successfully changed the password of Employee login");
         }
     }
 }

@@ -22,25 +22,18 @@ namespace EF_HRportal_WebAPI.Controllers
         [HttpGet("GetTimeline/{EmpId}")]
         public async Task<IActionResult> GetTimeLine([FromRoute] int EmpId)
         {
-            try
+            var Employee = await repository.GetEmployeeByIdAsync(EmpId);
+            if (Employee == null)
             {
-                var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-                if(Employee == null)
-                {
-                    return NotFound("Employee with the given ID does not exist..!!");
-                }
-                var timeLineDetails = await repository.GetTimeLineAsync(EmpId);
-                if(timeLineDetails.Count == 0)
-                {
-                    return NotFound("No timeline actions found for the employee");
-                }
-                var timeLineDetailsDTO = mapper.Map<List<TimelineDetailsDTO>>(timeLineDetails);
-                return Ok(timeLineDetailsDTO);
+                return NotFound("Employee with the given ID does not exist..!!");
             }
-            catch(Exception ex)
+            var timeLineDetails = await repository.GetTimeLineAsync(EmpId);
+            if (timeLineDetails.Count == 0)
             {
-                return BadRequest(ex.Message);
+                return NotFound("No timeline actions found for the employee");
             }
+            var timeLineDetailsDTO = mapper.Map<List<TimelineDetailsDTO>>(timeLineDetails);
+            return Ok(timeLineDetailsDTO);
         }
     }
 }

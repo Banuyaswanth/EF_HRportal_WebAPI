@@ -1,5 +1,6 @@
 using EF_HRportal_WebAPI;
 using EF_HRportal_WebAPI.Mappings;
+using EF_HRportal_WebAPI.Middlewares;
 using EF_HRportal_WebAPI.Repository;
 using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,8 @@ builder.Services.AddAutoMapper(typeof(AutoMapperProfiles));
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
