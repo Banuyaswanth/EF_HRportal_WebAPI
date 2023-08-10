@@ -6,6 +6,7 @@ using EF_HRportal_WebAPI.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Client;
+using System.Text.Json;
 
 namespace EF_HRportal_WebAPI.Controllers
 {
@@ -26,14 +27,14 @@ namespace EF_HRportal_WebAPI.Controllers
         [ValidateModel]
         public async Task<IActionResult> Login(LoginRequestDTO loginDetails)
         {
-            var adminDomain = await repository.GetHRbyEmailAsync(loginDetails.Email);
+            var adminDomain = await repository.GetHRbyEmailAsync(loginDetails.Email.ToLower());
             if (adminDomain == null)
             {
-                return NotFound("Invalid Email!!");
+                return NotFound("Invalid Username!!");
             }
             if (adminDomain.Password != loginDetails.Password)
             {
-                return BadRequest("Invalid Password!!");
+                return StatusCode(StatusCodes.Status401Unauthorized,new { Message = "Invalid Password!!" });
             }
             return Ok("Login Successful");
         }
@@ -47,17 +48,17 @@ namespace EF_HRportal_WebAPI.Controllers
             {
                 return NotFound("HR with the given ID does not exist!! Cannot change the password");
             }
-            if (HR.Email != newHRcredentialsDTO.Email)
+            if (HR.Email != newHRcredentialsDTO.Email.ToLower())
             {
-                return BadRequest("Incorrect Email ID entered for the provided HR ID");
+                return NotFound("Incorrect Email ID entered for the provided HR ID");
             }
             if (HR.Password != newHRcredentialsDTO.OldPassword)
             {
-                return BadRequest("Provide the correct old password!!");
+                return StatusCode(StatusCodes.Status401Unauthorized, new { Message = "Provide the correct old password!!" });
             }
             if (HR.Password == newHRcredentialsDTO.NewPassword)
             {
-                return BadRequest("New password cannot be the same as Old password.");
+                return BadRequest("New password cannot be the same as Old password");
             }
             var updatedAdminDetails = await repository.ChangeHRPasswordAsync(HR, newHRcredentialsDTO);
             var timeLineAction = new Timelinedetail
@@ -67,7 +68,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 DateOfAction = DateTime.Now
             };
             await repository.AddTimeLineAsync(timeLineAction);
-            return Ok("Successfully changed the password of the HR login Portal");
+            return Ok($"Successfully changed the HR Login password of portal for HR with ID {HR.EmpId}");
         }
 
         [HttpPost("CreateEmployee/{HRid}")]
@@ -82,7 +83,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var emailUser = await repository.GetEmployeeByEmailAsync(createEmployeeDTO.Email);
             if (emailUser != null)
             {
-                return BadRequest("Email has already been taken!! Try using a different Email");
+                return StatusCode(StatusCodes.Status409Conflict, new { Message = "Email has already been taken!! Try using a different Email" });
             }
             var Department = await repository.GetDepartmentByIdAsync(createEmployeeDTO.Department);
             if (Department == null)
@@ -95,6 +96,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 return NotFound("Manager with given ID does not exist!! Give a valid Manager ID");
             }
             var employeeDetailsDomain = mapper.Map<Employeedetail>(createEmployeeDTO);
+            employeeDetailsDomain.Email = createEmployeeDTO.Email.ToLower();
             var newEmployeeDomain = await repository.AddEmployeeAsync(employeeDetailsDomain);
             var timeLineAction = new Timelinedetail
             {
@@ -104,7 +106,7 @@ namespace EF_HRportal_WebAPI.Controllers
             };
             await repository.AddTimeLineAsync(timeLineAction);
             var newEmployeeDTO = mapper.Map<EmployeeDetailsDTO>(newEmployeeDomain);
-            return CreatedAtAction(nameof(CreateEmployee), newEmployeeDTO);
+            return StatusCode(StatusCodes.Status201Created, newEmployeeDTO);
         }
 
         [HttpGet("GetAllEmployees")]
@@ -153,7 +155,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 DateOfAction = DateTime.Now
             };
             await repository.AddTimeLineAsync(timeLineAction);
-            return Ok(new { message = "Employee with following details has been deleted successfully", deletedEmployeeDetails = deletedEmployeeDTO });
+            return Ok(new { Message = "Employee with following details has been deleted successfully", deletedEmployeeDetails = deletedEmployeeDTO });
         }
 
         [HttpPut("UpdateEmployee/{HRid}/{EmpId}")]
@@ -190,7 +192,7 @@ namespace EF_HRportal_WebAPI.Controllers
             };
             await repository.AddTimeLineAsync(timeLineAction);
             var updatedEmployeeDTO = mapper.Map<EmployeeDetailsDTO>(updatedEmployeeDomain);
-            return Ok(new { msg = "Updated the details successfully", updatedEmployeeDTO, });
+            return Ok(new { msg = $"Updated the details of employee with id {EmpId} successfully", updatedEmployeeDTO });
         }
 
         [HttpGet("/api/GetEmployeesReportingToManager/{ManagerId}")]
@@ -204,7 +206,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var EmployeesListDomain = await repository.GetAllEmployeesUnderManagerAsync(ManagerId);
             if (EmployeesListDomain.Count == 0)
             {
-                return Ok("No employees are reporting to the given ManagerId");
+                Ok("No employees are reporting to the given ManagerId");
             }
             var EmployeeListDTO = mapper.Map<List<EmployeeDetailsDTO>>(EmployeesListDomain);
             return Ok(EmployeeListDTO);
@@ -232,7 +234,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 DateOfAction = DateTime.Now,
             };
             await repository.AddTimeLineAsync(timeLineAction);
-            return Ok(newManagerDTO);
+            return StatusCode(StatusCodes.Status201Created, newManagerDTO);
         }
     }
 }

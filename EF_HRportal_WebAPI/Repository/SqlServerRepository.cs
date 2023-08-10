@@ -48,10 +48,6 @@ namespace EF_HRportal_WebAPI.Repository
 
         public async Task<Admindetail> ChangeHRPasswordAsync(Admindetail adminDetails, ChangePasswordRequestDTO newDetails)
         {
-            if(adminDetails == null)
-            {
-                return null;
-            }
             adminDetails.Password = newDetails.NewPassword;
             dbContext.Entry(adminDetails).State = EntityState.Modified;
             await dbContext.SaveChangesAsync();
@@ -102,7 +98,7 @@ namespace EF_HRportal_WebAPI.Repository
         public async Task<List<AttendanceSummaryDTO>> GetAttendanceOfEmployeeAsync(int EmployeeId)
         {
             var attendanceList = from record in dbContext.AttendanceDetails
-                                 where record.EmpId == EmployeeId
+                                 where record.EmpId == EmployeeId && record.TimeOut != null
                                  group record by record.DateOfAttendance into a
                                  orderby a.Key descending
                                  select new

@@ -26,14 +26,14 @@ namespace EF_HRportal_WebAPI.Controllers
         [ValidateModel]
         public async Task<IActionResult> Login([FromBody] LoginRequestDTO loginDetails)
         {
-            var Employee = await repository.GetEmployeeByEmailAsync(loginDetails.Email);
+            var Employee = await repository.GetEmployeeByEmailAsync(loginDetails.Email.ToLower());
             if (Employee == null)
             {
                 return NotFound("Invalid Username!!");
             }
             if (Employee.Password != loginDetails.Password)
             {
-                return BadRequest("Invalid Password!!");
+                return StatusCode(StatusCodes.Status401Unauthorized, new { Message = "Invalid Password!!" });
             }
             return Ok("Login Successful");
         }
@@ -44,7 +44,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var employeesDomainList = await repository.SearchEmployeeByNameAsync(name);
             if (employeesDomainList.Count == 0)
             {
-                return NotFound("No employee can be found with the given name");
+                return Ok("Could not find any Employee with the given name");
             }
             var employeesDTOList = mapper.Map<List<EmployeeDetailsDTO>>(employeesDomainList);
             return Ok(employeesDTOList);
@@ -80,7 +80,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 DateOfAction = DateTime.Now
             };
             await repository.AddTimeLineAsync(timeLineAction);
-            return Ok(updatedEmployeeDTO);
+            return Ok(new {Message = $"Successfully updated the personal details of employee with ID {EmpId}", UpdatedDetails = updatedEmployeeDTO});
         }
 
         [HttpPut("ChangePassword/{EmpId}")]
@@ -91,13 +91,13 @@ namespace EF_HRportal_WebAPI.Controllers
             {
                 return NotFound("Employee with the given ID does not exist..!! Cannot change the password");
             }
-            if (Employee.Email != newCredentials.Email)
+            if (Employee.Email != newCredentials.Email.ToLower())
             {
-                return BadRequest("Incorrect Email entered!!");
+                return NotFound("Incorrect Email entered!!");
             }
             if (Employee.Password != newCredentials.OldPassword)
             {
-                return BadRequest("Provide the correct old password!!");
+                return StatusCode(StatusCodes.Status401Unauthorized, new { Message = "Provide the correct old password!!" });
             }
             if (Employee.Password == newCredentials.NewPassword)
             {

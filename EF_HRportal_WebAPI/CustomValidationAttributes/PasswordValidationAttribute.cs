@@ -13,11 +13,11 @@ namespace EF_HRportal_WebAPI.CustomValidationAttributes
                 return new ValidationResult(ErrorMessage = "Password cannot be empty!!");
             }
             var inputValue = value.ToString();
-            if(Regex.IsMatch(inputValue,Pattern))
+            if(Regex.IsMatch(inputValue,Pattern) && !inputValue.Any(char.IsWhiteSpace))
             {
                 return ValidationResult.Success;
             }
-            return new ValidationResult(ErrorMessage = "Password should contain at least 8 Characters.Password should contain at least 1 Uppercase letter.Password should contain at least 1 Lowercase Letter.Password should contain at least 1 Special Character");
+            return new ValidationResult(ErrorMessage = "Password should contain at least 8 Characters.Password should contain at least 1 Uppercase letter.Password should contain at least 1 Lowercase Letter.Password should contain at least 1 Special Character.Password cannot contain a whitespace");
         }
     }
 }

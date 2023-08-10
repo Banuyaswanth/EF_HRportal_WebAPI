@@ -52,7 +52,11 @@ namespace EF_HRportal_WebAPI.Controllers
             }
             if (attendanceRecord.EmpId != EmpId)
             {
-                return BadRequest("Attendance record does not belong to the given Employee ID");
+                return StatusCode(StatusCodes.Status403Forbidden, new { Message = "Attendance record does not belong to the given Employee ID" });
+            }
+            if (attendanceRecord.TimeOut != null)
+            {
+                return StatusCode(StatusCodes.Status403Forbidden, "Cannot alter the TimeOut of already timed out record");
             }
             var updatedAttendanceRecord = await repository.EmployeeTimeOutAsync(attendanceRecord);
             return Ok(updatedAttendanceRecord);

@@ -19,7 +19,7 @@ namespace EF_HRportal_WebAPI.CustomValidationAttributes
             {
                 return new ValidationResult(ErrorMessage = "Email cannot contain a whitespace");
             }
-            if(!email.EndsWith("@gmail.com"))
+            if(!email.ToLower().EndsWith("@gmail.com"))
             {
                 return new ValidationResult(ErrorMessage = "Email should end with the @gmail.com domain name");
             }

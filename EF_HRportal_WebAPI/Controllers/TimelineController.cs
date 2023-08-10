@@ -30,7 +30,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var timeLineDetails = await repository.GetTimeLineAsync(EmpId);
             if (timeLineDetails.Count == 0)
             {
-                return NotFound("No timeline actions found for the employee");
+                return Ok("No timeline actions found for the employee");
             }
             var timeLineDetailsDTO = mapper.Map<List<TimelineDetailsDTO>>(timeLineDetails);
             return Ok(timeLineDetailsDTO);
