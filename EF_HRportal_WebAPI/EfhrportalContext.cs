@@ -92,7 +92,6 @@ public partial class EfhrportalContext : DbContext
 
             entity.HasOne(d => d.Emp).WithMany(p => p.AttendanceDetails)
                 .HasForeignKey(d => d.EmpId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK__attendanc__empId__29221CFB");
         });
 
@@ -175,7 +174,6 @@ public partial class EfhrportalContext : DbContext
 
             entity.HasOne(d => d.Manager).WithOne(p => p.Managerdetail)
                 .HasForeignKey<Managerdetail>(d => d.ManagerId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_managerdetails_employeedetails");
         });
 
@@ -195,7 +193,6 @@ public partial class EfhrportalContext : DbContext
 
             entity.HasOne(d => d.Emp).WithMany(p => p.Timelinedetails)
                 .HasForeignKey(d => d.EmpId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_timelinedetails_employeedetails");
         });
 
