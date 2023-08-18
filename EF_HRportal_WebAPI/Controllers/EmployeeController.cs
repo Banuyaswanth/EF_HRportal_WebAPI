@@ -65,7 +65,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
             var PersonalDetails = mapper.Map<PersonalDetailsDTO>(Employee);
             return Ok(PersonalDetails);
@@ -81,7 +81,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var updatedEmployeeDomain = await repository.UpdatePersonalDetailsAsync(Employee, newDetails);
             var updatedEmployeeDTO = mapper.Map<PersonalDetailsDTO>(updatedEmployeeDomain);
@@ -104,19 +104,19 @@ namespace EF_HRportal_WebAPI.Controllers
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             if (Employee.Email != newCredentials.Email.ToLower())
             {
-                return NotFound(localizer["InvalidEmail"].Value);
+                return Ok(localizer["InvalidEmail"].Value);
             }
             if (Employee.Password != newCredentials.OldPassword)
             {
-                return BadRequest(localizer["IncorrectOldPassword"].Value);
+                return Ok(localizer["IncorrectOldPassword"].Value);
             }
             if (Employee.Password == newCredentials.NewPassword)
             {
-                return BadRequest(localizer["DifferentNewAndOldPasswords"].Value);
+                return Ok(localizer["DifferentNewAndOldPasswords"].Value);
             }
             var updatedEmployeeDetails = await repository.ChangeEmployeePasswordAsync(Employee, newCredentials);
             var timeLineAction = new Timelinedetail

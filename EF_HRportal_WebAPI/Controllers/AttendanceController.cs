@@ -33,7 +33,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var oldTimeInDetails = await repository.GetAttendanceRecordAsync(EmpId);
             if (oldTimeInDetails != null)
@@ -43,7 +43,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var newTimeInDetails = await repository.EmployeeTimeInAsync(EmpId);
             if (newTimeInDetails == null)
             {
-                return BadRequest(localizer["TimeInFailure"].Value);
+                return Ok(localizer["TimeInFailure"].Value);
             }
             return Ok(new { lastTimeInId = newTimeInDetails.Id, Message = localizer["TimeInMsg",newTimeInDetails.Id].Value });
         }
@@ -56,12 +56,12 @@ namespace EF_HRportal_WebAPI.Controllers
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var attendanceRecord = await repository.GetAttendanceRecordAsync(EmpId);
             if (attendanceRecord == null)
             {
-                return NotFound(localizer["TimeOutRecordNotFound",EmpId].Value);
+                return Ok(localizer["TimeOutRecordNotFound",EmpId].Value);
             }
             var updatedAttendanceRecord = await repository.EmployeeTimeOutAsync(attendanceRecord);
             return Ok(updatedAttendanceRecord);
@@ -74,7 +74,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var attendance = await repository.GetAttendanceOfEmployeeAsync(EmpId);
             if (attendance.Count == 0)

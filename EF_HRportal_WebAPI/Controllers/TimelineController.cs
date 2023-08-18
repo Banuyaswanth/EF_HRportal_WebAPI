@@ -29,7 +29,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var timeLineDetails = await repository.GetTimeLineAsync(EmpId);
             if (timeLineDetails.Count == 0)
