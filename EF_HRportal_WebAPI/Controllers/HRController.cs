@@ -36,11 +36,11 @@ namespace EF_HRportal_WebAPI.Controllers
             var adminDomain = await repository.GetHRbyEmailAsync(loginDetails.Email.ToLower());
             if (adminDomain == null)
             {
-                return BadRequest(localizer["InvalidEmail"].Value);
+                return Ok(localizer["InvalidEmail"].Value);
             }
             if (adminDomain.Password != loginDetails.Password)
             {
-                return BadRequest(localizer["InvalidPassword"].Value);
+                return Ok(localizer["InvalidPassword"].Value);
                 //return StatusCode(StatusCodes.Status401Unauthorized, localizer["InvalidLoginPassword"].Value);
             }
             return Ok(localizer["LoginSuccessful"].Value);
@@ -55,19 +55,19 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound(localizer["HRDoNotExist",HRid].Value);
+                return Ok(localizer["HRDoNotExist",HRid].Value);
             }
             if (HR.Email != newHRcredentialsDTO.Email.ToLower())
             {
-                return NotFound(localizer["InvalidEmail"]);
+                return Ok(localizer["InvalidEmail"]);
             }
             if (HR.Password != newHRcredentialsDTO.OldPassword)
             {
-                return BadRequest(localizer["IncorrectOldPassword"].Value);
+                return Ok(localizer["IncorrectOldPassword"].Value);
             }
             if (HR.Password == newHRcredentialsDTO.NewPassword)
             {
-                return BadRequest(localizer["DifferentNewAndOldPasswords"].Value);
+                return Ok(localizer["DifferentNewAndOldPasswords"].Value);
             }
             var updatedAdminDetails = await repository.ChangeHRPasswordAsync(HR, newHRcredentialsDTO);
             var timeLineAction = new Timelinedetail
@@ -89,7 +89,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound(localizer["HRDoNotExist",HRid]);
+                return Ok(localizer["HRDoNotExist",HRid]);
             }
             var emailUser = await repository.GetEmployeeByEmailAsync(createEmployeeDTO.Email);
             if (emailUser != null)
@@ -99,12 +99,12 @@ namespace EF_HRportal_WebAPI.Controllers
             var Department = await repository.GetDepartmentByIdAsync(createEmployeeDTO.Department);
             if (Department == null)
             {
-                return NotFound(localizer["DepartmentDoesNotExist", createEmployeeDTO.Department]);
+                return Ok(localizer["DepartmentDoesNotExist", createEmployeeDTO.Department]);
             }
             var manager = await repository.GetManagerByIdAsync(createEmployeeDTO.ManagerId);
             if (manager == null)
             {
-                return NotFound(localizer["ManagerDoesNotExist", createEmployeeDTO.ManagerId]);
+                return Ok(localizer["ManagerDoesNotExist", createEmployeeDTO.ManagerId]);
             }
             var employeeDetailsDomain = mapper.Map<Employeedetail>(createEmployeeDTO);
             employeeDetailsDomain.Email = createEmployeeDTO.Email.ToLower();
@@ -141,7 +141,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var employeeDomain = await repository.GetEmployeeByIdAsync(EmpId);
             if (employeeDomain == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
             var employeeDTO = mapper.Map<EmployeeDetailsDTO>(employeeDomain);
             return Ok(employeeDTO);
@@ -158,12 +158,12 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound(localizer["HRDoNotExist",HRid].Value);
+                return Ok(localizer["HRDoNotExist",HRid].Value);
             }
             var employeeDomain = await repository.GetEmployeeByIdAsync(EmpId);
             if (employeeDomain == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
             var deletedEmployeeDomain = await repository.DeleteEmployeeAsync(employeeDomain);
             var deletedEmployeeDTO = mapper.Map<EmployeeDetailsDTO>(deletedEmployeeDomain);
@@ -188,22 +188,22 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound(localizer["HRDoNotExist", HRid].Value);
+                return Ok(localizer["HRDoNotExist", HRid].Value);
             }
             var EmployeeDomain = await repository.GetEmployeeByIdAsync(EmpId);
             if (EmployeeDomain == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var Department = await repository.GetDepartmentByIdAsync(newDetails.Department);
             if (Department == null)
             {
-                return NotFound(localizer["DepartmentDoesNotExist",newDetails.Department].Value);
+                return Ok(localizer["DepartmentDoesNotExist",newDetails.Department].Value);
             }
             var Manager = await repository.GetManagerByIdAsync(newDetails.ManagerId);
             if (Manager == null)
             {
-                return NotFound(localizer["ManagerDoesNotExist", newDetails.ManagerId].Value);
+                return Ok(localizer["ManagerDoesNotExist", newDetails.ManagerId].Value);
             }
             var updatedEmployeeDomain = await repository.UpdateEmployeeDetailsAsync(EmployeeDomain, newDetails);
 
@@ -226,7 +226,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var Manager = await repository.GetManagerByIdAsync(ManagerId);
             if (Manager == null)
             {
-                return NotFound(localizer["ManagerDoesNotExist",ManagerId].Value);
+                return Ok(localizer["ManagerDoesNotExist",ManagerId].Value);
             }
             var EmployeesListDomain = await repository.GetAllEmployeesUnderManagerAsync(ManagerId);
             if (EmployeesListDomain.Count == 0)
@@ -247,12 +247,12 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound(localizer["HRDoNotExist",HRid].Value);
+                return Ok(localizer["HRDoNotExist",HRid].Value);
             }
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
+                return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
             var newManager = await repository.AddManagerAsync(Employee);
             var newManagerDTO = mapper.Map<ManagerDetailsDTO>(newManager);
