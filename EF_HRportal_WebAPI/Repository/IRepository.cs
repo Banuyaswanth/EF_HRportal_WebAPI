@@ -26,7 +26,7 @@ namespace EF_HRportal_WebAPI.Repository
         Task<AttendanceDetail> EmployeeTimeInAsync(int EmpId);
         Task<AttendanceDetail> EmployeeTimeOutAsync(AttendanceDetail attendanceRecord);
         Task<AttendanceDetail> SetDurationAsync(AttendanceDetail attendanceRecord);
-        Task<AttendanceDetail?> GetAttendanceRecordAsync(int LastTimeInId);
+        Task<AttendanceDetail?> GetAttendanceRecordAsync(int EmpId);
         Task<List<AttendanceSummaryDTO>> GetAttendanceOfEmployeeAsync(int EmployeeId);
     }
 }

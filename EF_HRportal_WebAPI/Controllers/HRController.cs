@@ -5,6 +5,7 @@ using EF_HRportal_WebAPI.Models.DTOs;
 using EF_HRportal_WebAPI.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 using Microsoft.Identity.Client;
 using System.Text.Json;
 
@@ -16,13 +17,18 @@ namespace EF_HRportal_WebAPI.Controllers
     {
         private readonly IRepository repository;
         private readonly IMapper mapper;
+        private readonly IStringLocalizer<HRController> localizer;
 
-        public HRController(IRepository repository, IMapper mapper)
+        public HRController(IRepository repository, IMapper mapper, IStringLocalizer<HRController> localizer)
         {
             this.repository = repository;
             this.mapper = mapper;
+            this.localizer = localizer;
         }
 
+
+        //This API authenticates if the user is an Admin/HR
+        //This API will be consumed if the user selects Admin role in the login form
         [HttpPost("login")]
         [ValidateModel]
         public async Task<IActionResult> Login(LoginRequestDTO loginDetails)
@@ -30,15 +36,18 @@ namespace EF_HRportal_WebAPI.Controllers
             var adminDomain = await repository.GetHRbyEmailAsync(loginDetails.Email.ToLower());
             if (adminDomain == null)
             {
-                return NotFound("Invalid Username!!");
+                return BadRequest(localizer["InvalidEmail"].Value);
             }
             if (adminDomain.Password != loginDetails.Password)
             {
-                return StatusCode(StatusCodes.Status401Unauthorized,new { Message = "Invalid Password!!" });
+                return BadRequest(localizer["InvalidPassword"].Value);
+                //return StatusCode(StatusCodes.Status401Unauthorized, localizer["InvalidLoginPassword"].Value);
             }
-            return Ok("Login Successful");
+            return Ok(localizer["LoginSuccessful"].Value);
         }
 
+        //This API changes the login password of the Admin/HR Login portal
+        //This will store the HR login password changed action in the timeline details table
         [HttpPut("ChangeHRPassword/{HRid}")]
         [ValidateModel]
         public async Task<IActionResult> ChangeHRPassword([FromRoute] int HRid, [FromBody] ChangePasswordRequestDTO newHRcredentialsDTO)
@@ -46,19 +55,19 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound("HR with the given ID does not exist!! Cannot change the password");
+                return NotFound(localizer["HRDoNotExist",HRid].Value);
             }
             if (HR.Email != newHRcredentialsDTO.Email.ToLower())
             {
-                return NotFound("Incorrect Email ID entered for the provided HR ID");
+                return NotFound(localizer["InvalidEmail"]);
             }
             if (HR.Password != newHRcredentialsDTO.OldPassword)
             {
-                return StatusCode(StatusCodes.Status401Unauthorized, new { Message = "Provide the correct old password!!" });
+                return BadRequest(localizer["IncorrectOldPassword"].Value);
             }
             if (HR.Password == newHRcredentialsDTO.NewPassword)
             {
-                return BadRequest("New password cannot be the same as Old password");
+                return BadRequest(localizer["DifferentNewAndOldPasswords"].Value);
             }
             var updatedAdminDetails = await repository.ChangeHRPasswordAsync(HR, newHRcredentialsDTO);
             var timeLineAction = new Timelinedetail
@@ -68,9 +77,11 @@ namespace EF_HRportal_WebAPI.Controllers
                 DateOfAction = DateTime.Now
             };
             await repository.AddTimeLineAsync(timeLineAction);
-            return Ok($"Successfully changed the HR Login password of portal for HR with ID {HR.EmpId}");
+            return Ok(localizer["HRLoginPasswordChangeSuccess", HR.EmpId]);
         }
 
+        //This API will create a new Employee and returns EmployeeDetailsDTO of the newly created employee
+        //This will store the new employee created action in the timeline details table
         [HttpPost("CreateEmployee/{HRid}")]
         [ValidateModel]
         public async Task<IActionResult> CreateEmployee([FromRoute] int HRid, [FromBody] CreateEmployeeRequestDTO createEmployeeDTO)
@@ -78,22 +89,22 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound("HR with given ID does not exist!!");
+                return NotFound(localizer["HRDoNotExist",HRid]);
             }
             var emailUser = await repository.GetEmployeeByEmailAsync(createEmployeeDTO.Email);
             if (emailUser != null)
             {
-                return StatusCode(StatusCodes.Status409Conflict, new { Message = "Email has already been taken!! Try using a different Email" });
+                return StatusCode(StatusCodes.Status409Conflict, new { Message = localizer["EmailAlreadyInUse"].Value });
             }
             var Department = await repository.GetDepartmentByIdAsync(createEmployeeDTO.Department);
             if (Department == null)
             {
-                return NotFound("The given Department does not exist in the organisation!! Provide a valid Department ID");
+                return NotFound(localizer["DepartmentDoesNotExist", createEmployeeDTO.Department]);
             }
             var manager = await repository.GetManagerByIdAsync(createEmployeeDTO.ManagerId);
             if (manager == null)
             {
-                return NotFound("Manager with given ID does not exist!! Give a valid Manager ID");
+                return NotFound(localizer["ManagerDoesNotExist", createEmployeeDTO.ManagerId]);
             }
             var employeeDetailsDomain = mapper.Map<Employeedetail>(createEmployeeDTO);
             employeeDetailsDomain.Email = createEmployeeDTO.Email.ToLower();
@@ -109,42 +120,50 @@ namespace EF_HRportal_WebAPI.Controllers
             return StatusCode(StatusCodes.Status201Created, newEmployeeDTO);
         }
 
+        //This API will return a list of EmployeeDetailDTO's of all the employees present in the database
         [HttpGet("GetAllEmployees")]
         public async Task<IActionResult> GetAllEmployees()
         {
             var employeesListDomain = await repository.GetAllEmployeesAsync();
             if (employeesListDomain.Count == 0)
             {
-                return Ok("There are no employees at present to display");
+                return Ok(localizer["NoEmployees"].Value);
             }
             var employeesListDTO = mapper.Map<List<EmployeeDetailsDTO>>(employeesListDomain);
             return Ok(employeesListDTO);
         }
 
+        //This API will return a EmployeeDetailsDTO
+        //It requires an Employee ID to be passed in the route
         [HttpGet("GetEmployee/{EmpId}")]
         public async Task<IActionResult> GetEmployee([FromRoute] int EmpId)
         {
             var employeeDomain = await repository.GetEmployeeByIdAsync(EmpId);
             if (employeeDomain == null)
             {
-                return NotFound("Employee with given ID does not exist!!");
+                return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
             var employeeDTO = mapper.Map<EmployeeDetailsDTO>(employeeDomain);
             return Ok(employeeDTO);
         }
 
+        //This API will delete the Employee from the database.
+        //By triggering this API all the data of the deleted Employee will be completely erased.
+        //Employee's attendance,timeline will also be deleted
+        //This API requires the ID of the HR/Admin who is performing the delete operation and the ID of the Employee who needs to be deleted
+        //This will store the employee deleted action in the timeline details table
         [HttpDelete("DeleteEmployee/{HRid}/{EmpId}")]
         public async Task<IActionResult> DeleteEmployee([FromRoute] int HRid, [FromRoute] int EmpId)
         {
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound("HR with the given ID does not exist!!");
+                return NotFound(localizer["HRDoNotExist",HRid].Value);
             }
             var employeeDomain = await repository.GetEmployeeByIdAsync(EmpId);
             if (employeeDomain == null)
             {
-                return NotFound("Employee with the given ID does not exist!! Provide the ID of an existing employee to delete from the database.");
+                return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
             var deletedEmployeeDomain = await repository.DeleteEmployeeAsync(employeeDomain);
             var deletedEmployeeDTO = mapper.Map<EmployeeDetailsDTO>(deletedEmployeeDomain);
@@ -155,9 +174,13 @@ namespace EF_HRportal_WebAPI.Controllers
                 DateOfAction = DateTime.Now
             };
             await repository.AddTimeLineAsync(timeLineAction);
-            return Ok(new { Message = "Employee with following details has been deleted successfully", deletedEmployeeDetails = deletedEmployeeDTO });
+            return Ok(new { Message = localizer["EmployeeDeletionSuccess"].Value, deletedEmployeeDetails = deletedEmployeeDTO });
         }
 
+        //This API is used to update the details of the employee
+        //It requires the ID of HR/Admin who is updating the details, ID of the employee whose details are being updated
+        //This API also requires a body of UpdateEmployeeByHRRequestDTO
+        //This will store the updated employee details action in the timeline details table
         [HttpPut("UpdateEmployee/{HRid}/{EmpId}")]
         [ValidateModel]
         public async Task<IActionResult> UpdateEmployee([FromRoute] int HRid, [FromRoute] int EmpId, [FromBody] UpdateEmployeeByHRRequestDTO newDetails)
@@ -165,22 +188,22 @@ namespace EF_HRportal_WebAPI.Controllers
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound("HR with the given ID does not exist!!");
+                return NotFound(localizer["HRDoNotExist", HRid].Value);
             }
             var EmployeeDomain = await repository.GetEmployeeByIdAsync(EmpId);
             if (EmployeeDomain == null)
             {
-                return NotFound("Employee with the Given ID does not exist!! Cannot update the details");
+                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var Department = await repository.GetDepartmentByIdAsync(newDetails.Department);
             if (Department == null)
             {
-                return NotFound("The given Department does not exist in the organisation!! Provide a valid Department ID");
+                return NotFound(localizer["DepartmentDoesNotExist",newDetails.Department].Value);
             }
             var Manager = await repository.GetManagerByIdAsync(newDetails.ManagerId);
             if (Manager == null)
             {
-                return NotFound("Manager with given new ManagerId does not exist.. Provide a valid ManagerId");
+                return NotFound(localizer["ManagerDoesNotExist", newDetails.ManagerId].Value);
             }
             var updatedEmployeeDomain = await repository.UpdateEmployeeDetailsAsync(EmployeeDomain, newDetails);
 
@@ -192,38 +215,44 @@ namespace EF_HRportal_WebAPI.Controllers
             };
             await repository.AddTimeLineAsync(timeLineAction);
             var updatedEmployeeDTO = mapper.Map<EmployeeDetailsDTO>(updatedEmployeeDomain);
-            return Ok(new { msg = $"Updated the details of employee with id {EmpId} successfully", updatedEmployeeDTO });
+            return Ok(new { msg = localizer["EmployeeDetailsUpdationSuccess", updatedEmployeeDTO.Id].Value, updatedEmployeeDTO });
         }
 
+        //This API will return the list of EmployeeDetailsDTO's of the employees reporting to the 
+        //provided ManagerId in the route
         [HttpGet("/api/GetEmployeesReportingToManager/{ManagerId}")]
         public async Task<IActionResult> GetEmployeesReportingToManager([FromRoute] int ManagerId)
         {
             var Manager = await repository.GetManagerByIdAsync(ManagerId);
             if (Manager == null)
             {
-                return NotFound("Manager with the given ID does not exist. Provide a valid ManagerId");
+                return NotFound(localizer["ManagerDoesNotExist",ManagerId].Value);
             }
             var EmployeesListDomain = await repository.GetAllEmployeesUnderManagerAsync(ManagerId);
             if (EmployeesListDomain.Count == 0)
             {
-                Ok("No employees are reporting to the given ManagerId");
+                Ok(localizer["NoEmployees"].Value);
             }
             var EmployeeListDTO = mapper.Map<List<EmployeeDetailsDTO>>(EmployeesListDomain);
             return Ok(EmployeeListDTO);
         }
 
+        //This API will Add an employee as a manager
+        //This API requires the ID of the HR/Admin who is adding the Manager and also the employee ID of the
+        //employee who is being added as manager
+        //This will store the manager added action in the timeline details table
         [HttpPost("AddManager/{HRid}/{EmpId}")]
         public async Task<IActionResult> AddManager([FromRoute] int HRid, [FromRoute] int EmpId)
         {
             var HR = await repository.GetHRByIdAsync(HRid);
             if (HR == null)
             {
-                return NotFound("HR with given ID does not exist!!");
+                return NotFound(localizer["HRDoNotExist",HRid].Value);
             }
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound("Employee with given ID does not exist..!! Provide a valid employee ID to add as a manager");
+                return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
             var newManager = await repository.AddManagerAsync(Employee);
             var newManagerDTO = mapper.Map<ManagerDetailsDTO>(newManager);

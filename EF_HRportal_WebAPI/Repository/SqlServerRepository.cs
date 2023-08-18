@@ -122,9 +122,9 @@ namespace EF_HRportal_WebAPI.Repository
             return FinalAttendanceList;
         }
 
-        public async Task<AttendanceDetail?> GetAttendanceRecordAsync(int LastTimeInId)
+        public async Task<AttendanceDetail?> GetAttendanceRecordAsync(int EmpId)
         {
-            return await dbContext.AttendanceDetails.FirstOrDefaultAsync(x => x.Id == LastTimeInId);
+            return await dbContext.AttendanceDetails.FirstOrDefaultAsync(x => x.EmpId == EmpId && x.TimeOut == null);
         }
 
         public async Task<Departmentdetail?> GetDepartmentByIdAsync(string DepartmentId)

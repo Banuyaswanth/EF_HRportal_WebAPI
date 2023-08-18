@@ -3,6 +3,7 @@ using EF_HRportal_WebAPI.Models.DTOs;
 using EF_HRportal_WebAPI.Repository;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Localization;
 
 namespace EF_HRportal_WebAPI.Controllers
 {
@@ -12,25 +13,28 @@ namespace EF_HRportal_WebAPI.Controllers
     {
         private readonly IRepository repository;
         private readonly IMapper mapper;
+        private readonly IStringLocalizer<TimelineController> localizer;
 
-        public TimelineController(IRepository repository, IMapper mapper)
+        public TimelineController(IRepository repository, IMapper mapper, IStringLocalizer<TimelineController> localizer)
         {
             this.repository = repository;
             this.mapper = mapper;
+            this.localizer = localizer;
         }
 
+        //This API will return the List of TimelineDetailsDTO's of the employee whose ID is provided in the Route
         [HttpGet("GetTimeline/{EmpId}")]
         public async Task<IActionResult> GetTimeLine([FromRoute] int EmpId)
         {
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
             if (Employee == null)
             {
-                return NotFound("Employee with the given ID does not exist..!!");
+                return NotFound(localizer["EmployeeDoesNotExist",EmpId].Value);
             }
             var timeLineDetails = await repository.GetTimeLineAsync(EmpId);
             if (timeLineDetails.Count == 0)
             {
-                return Ok("No timeline actions found for the employee");
+                return Ok(localizer["NoTimelineActions",EmpId].Value);
             }
             var timeLineDetailsDTO = mapper.Map<List<TimelineDetailsDTO>>(timeLineDetails);
             return Ok(timeLineDetailsDTO);
