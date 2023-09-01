@@ -1,8 +1,8 @@
 ﻿namespace EF_HRportal_WebAPI.Models.DTOs
 {
-    public class AttendanceSummaryDTO
+    public class AttendanceSummaryDto
     {
-        public string Date { get; set; }
-        public string TotalDuration { get; set; }
+        public string Date { get; set; } = null!;
+        public string TotalDuration { get; set; } = null!;
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace EF_HRportal_WebAPI.Models.DTOs
 {
-    public class TimelineDetailsDTO
+    public class TimelineDetailsDto
     {
         public string Action { get; set; } = null!;
 

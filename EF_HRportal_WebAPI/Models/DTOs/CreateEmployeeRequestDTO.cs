@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EF_HRportal_WebAPI.Models.DTOs
 {
-    public class CreateEmployeeRequestDTO
+    public class CreateEmployeeRequestDto
     {
         [Required(ErrorMessage ="Name field cannot be empty!!")]
         [MinLength(1,ErrorMessage ="Name should contain a minimum of 1 character")]

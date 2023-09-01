@@ -8,15 +8,15 @@ namespace EF_HRportal_WebAPI.Mappings
     {
         public AutoMapperProfiles() 
         {
-            CreateMap<CreateEmployeeRequestDTO, Employeedetail>().ReverseMap();
-            CreateMap<Employeedetail,EmployeeDetailsDTO>().
+            CreateMap<CreateEmployeeRequestDto, Employeedetail>().ReverseMap();
+            CreateMap<Employeedetail,EmployeeDetailsDto>().
                 ForMember(x=> x.ManagerName, opt => opt.MapFrom(src => src.Manager.Name)).
                 ForMember(x=> x.ManagerEmail, opt => opt.MapFrom(src => src.Manager.Email)).ReverseMap();
-            CreateMap<Managerdetail, ManagerDetailsDTO>().ReverseMap();
-            CreateMap<Employeedetail, PersonalDetailsDTO>().
+            CreateMap<Managerdetail, ManagerDetailsDto>().ReverseMap();
+            CreateMap<Employeedetail, PersonalDetailsDto>().
                 ForMember(x => x.ManagerName, opt => opt.MapFrom(src => src.Manager.Name)).
                 ForMember(x => x.ManagerEmail, opt => opt.MapFrom(src => src.Manager.Email)).ReverseMap();
-            CreateMap<Timelinedetail, TimelineDetailsDTO>().ReverseMap();
+            CreateMap<Timelinedetail, TimelineDetailsDto>().ReverseMap();
         }
     }
 }

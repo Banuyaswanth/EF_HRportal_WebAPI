@@ -3,12 +3,12 @@ using System.ComponentModel.DataAnnotations;
 
 namespace EF_HRportal_WebAPI.Models.DTOs
 {
-    public class UpdatePersonalDetailsDTO
+    public class UpdatePersonalDetailsDto
     {
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } = null!;
 
         [PhoneNumberValidation]
-        public string Phone { get;set; }
+        public string Phone { get;set; } = null!;
     }
 }

@@ -27,7 +27,7 @@ namespace EF_HRportal_WebAPI.Middlewares
             }
         }
 
-        private ProblemDetails GetProblemDetails(Exception ex)
+        private static ProblemDetails GetProblemDetails(Exception ex)
         {
             string traceId = Guid.NewGuid().ToString();
             return new ProblemDetails

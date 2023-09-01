@@ -1,6 +1,6 @@
 ﻿namespace EF_HRportal_WebAPI.Models.DTOs
 {
-    public class ManagerDetailsDTO
+    public class ManagerDetailsDto
     {
         public int ManagerId { get; set; }
 

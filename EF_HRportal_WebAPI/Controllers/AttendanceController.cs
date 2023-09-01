@@ -14,57 +14,55 @@ namespace EF_HRportal_WebAPI.Controllers
     public class AttendanceController : ControllerBase
     {
         private readonly IRepository repository;
-        private readonly IMapper mapper;
         private readonly IStringLocalizer<AttendanceController> localizer;
 
-        public AttendanceController(IRepository repository, IMapper mapper, IStringLocalizer<AttendanceController> localizer)
+        public AttendanceController(IRepository repository, IStringLocalizer<AttendanceController> localizer)
         {
             this.repository = repository;
-            this.mapper = mapper;
             this.localizer = localizer;
         }
 
-        //This API will create a new attendance record for the Employee whose ID is provided in the route
-        //This API will add the Time In for the created attendance record
-        //It will return the ID of the record generated which should be stored in the Cookies of the browser using frontend
+        /*This API will create a new attendance record for the Employee whose ID is provided in the route
+        This API will add the Time In for the created attendance record
+        It will return the ID of the record generated which should be stored in the Cookies of the browser using frontend*/
         [HttpPost("TimeIn/{EmpId}")]
         public async Task<IActionResult> TimeIn([FromRoute] int EmpId)
         {
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-            if (Employee == null)
+            if (Employee != null)
             {
-                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
-            }
-            var oldTimeInDetails = await repository.GetAttendanceRecordAsync(EmpId);
-            if (oldTimeInDetails != null)
-            {
-                return StatusCode(StatusCodes.Status405MethodNotAllowed, localizer["MultipleTimeIn", EmpId].Value);
-            }
-            var newTimeInDetails = await repository.EmployeeTimeInAsync(EmpId);
-            if (newTimeInDetails == null)
-            {
+                var oldTimeInDetails = await repository.GetAttendanceRecordAsync(EmpId);
+                if (oldTimeInDetails != null)
+                {
+                    return StatusCode(StatusCodes.Status405MethodNotAllowed, localizer["MultipleTimeIn", EmpId].Value);
+                }
+                var newTimeInDetails = await repository.EmployeeTimeInAsync(EmpId);
+                if (newTimeInDetails != null)
+                {
+                    return Ok(new { lastTimeInId = newTimeInDetails.Id, Message = localizer["TimeInMsg", newTimeInDetails.Id].Value });
+                }
                 return Ok(localizer["TimeInFailure"].Value);
             }
-            return Ok(new { lastTimeInId = newTimeInDetails.Id, Message = localizer["TimeInMsg",newTimeInDetails.Id].Value });
+            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
 
-        //This API will accept the Employee ID and the LastTimeInID that is returned by the TimeIN API
-        //This API will update the TimeOut record and calculate the duration for the attendance record
+        /*This API will accept the Employee ID and the LastTimeInID that is returned by the TimeIN API
+        This API will update the TimeOut record and calculate the duration for the attendance record*/
         [HttpPut("TimeOut/{EmpId}")]
         public async Task<IActionResult> TimeOut([FromRoute] int EmpId)
         {
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-            if (Employee == null)
+            if (Employee != null)
             {
-                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+                var attendanceRecord = await repository.GetAttendanceRecordAsync(EmpId);
+                if (attendanceRecord != null)
+                {
+                    var updatedAttendanceRecord = await repository.EmployeeTimeOutAsync(attendanceRecord);
+                    return Ok(updatedAttendanceRecord);
+                }
+                return Ok(localizer["TimeOutRecordNotFound", EmpId].Value);
             }
-            var attendanceRecord = await repository.GetAttendanceRecordAsync(EmpId);
-            if (attendanceRecord == null)
-            {
-                return Ok(localizer["TimeOutRecordNotFound",EmpId].Value);
-            }
-            var updatedAttendanceRecord = await repository.EmployeeTimeOutAsync(attendanceRecord);
-            return Ok(updatedAttendanceRecord);
+            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
 
         //This API will return the summary of the attendance of the Employee whose ID is provided in the Route
@@ -72,16 +70,16 @@ namespace EF_HRportal_WebAPI.Controllers
         public async Task<IActionResult> GetAttendance([FromRoute] int EmpId)
         {
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-            if (Employee == null)
+            if (Employee != null)
             {
-                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+                var attendance = await repository.GetAttendanceOfEmployeeAsync(EmpId);
+                if (attendance.Count == 0)
+                {
+                    return Ok(localizer["NoAttendanceRecords", EmpId].Value);
+                }
+                return Ok(attendance);
             }
-            var attendance = await repository.GetAttendanceOfEmployeeAsync(EmpId);
-            if (attendance.Count == 0)
-            {
-                return Ok(localizer["NoAttendanceRecords", EmpId].Value);
-            }
-            return Ok(attendance);
+            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
     }
 }

@@ -27,17 +27,17 @@ namespace EF_HRportal_WebAPI.Controllers
         public async Task<IActionResult> GetTimeLine([FromRoute] int EmpId)
         {
             var Employee = await repository.GetEmployeeByIdAsync(EmpId);
-            if (Employee == null)
+            if (Employee != null)
             {
-                return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+                var timeLineDetails = await repository.GetTimeLineAsync(EmpId);
+                if (timeLineDetails.Count == 0)
+                {
+                    return Ok(localizer["NoTimelineActions", EmpId].Value);
+                }
+                var timeLineDetailsDTO = mapper.Map<List<TimelineDetailsDto>>(timeLineDetails);
+                return Ok(timeLineDetailsDTO);
             }
-            var timeLineDetails = await repository.GetTimeLineAsync(EmpId);
-            if (timeLineDetails.Count == 0)
-            {
-                return Ok(localizer["NoTimelineActions",EmpId].Value);
-            }
-            var timeLineDetailsDTO = mapper.Map<List<TimelineDetailsDTO>>(timeLineDetails);
-            return Ok(timeLineDetailsDTO);
+            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
     }
 }

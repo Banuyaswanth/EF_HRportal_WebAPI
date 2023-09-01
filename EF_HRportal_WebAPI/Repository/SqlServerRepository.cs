@@ -38,7 +38,7 @@ namespace EF_HRportal_WebAPI.Repository
             return timelineDetail;
         }
 
-        public async Task<Employeedetail> ChangeEmployeePasswordAsync(Employeedetail employeeDetails, ChangePasswordRequestDTO newCredentials)
+        public async Task<Employeedetail> ChangeEmployeePasswordAsync(Employeedetail employeeDetails, ChangePasswordRequestDto newCredentials)
         {
             employeeDetails.Password = newCredentials.NewPassword;
             dbContext.Entry(employeeDetails).State = EntityState.Modified;
@@ -46,7 +46,7 @@ namespace EF_HRportal_WebAPI.Repository
             return employeeDetails;
         }
 
-        public async Task<Admindetail> ChangeHRPasswordAsync(Admindetail adminDetails, ChangePasswordRequestDTO newDetails)
+        public async Task<Admindetail> ChangeHRPasswordAsync(Admindetail adminDetails, ChangePasswordRequestDto newDetails)
         {
             adminDetails.Password = newDetails.NewPassword;
             dbContext.Entry(adminDetails).State = EntityState.Modified;
@@ -54,7 +54,7 @@ namespace EF_HRportal_WebAPI.Repository
             return adminDetails;
         }
 
-        public async Task<Employeedetail?> DeleteEmployeeAsync(Employeedetail employeeDetails)
+        public async Task<Employeedetail> DeleteEmployeeAsync(Employeedetail employeeDetails)
         {
             dbContext.Employeedetails.Remove(employeeDetails);
             await dbContext.SaveChangesAsync();
@@ -74,11 +74,11 @@ namespace EF_HRportal_WebAPI.Repository
             return newTimeIn;
         }
 
-        public async Task<AttendanceDetail> EmployeeTimeOutAsync(AttendanceDetail attendanceDetail)
+        public async Task<AttendanceDetail> EmployeeTimeOutAsync(AttendanceDetail attendanceRecord)
         {
-            attendanceDetail.TimeOut = DateTime.Now;
+            attendanceRecord.TimeOut = DateTime.Now;
             await dbContext.SaveChangesAsync();
-            var updatedAttendanceDetail = await SetDurationAsync(attendanceDetail);
+            var updatedAttendanceDetail = await SetDurationAsync(attendanceRecord);
             return updatedAttendanceDetail;
         }
 
@@ -95,7 +95,7 @@ namespace EF_HRportal_WebAPI.Repository
             return await employeesList.ToListAsync();
         }
 
-        public async Task<List<AttendanceSummaryDTO>> GetAttendanceOfEmployeeAsync(int EmployeeId)
+        public async Task<List<AttendanceSummaryDto>> GetAttendanceOfEmployeeAsync(int EmployeeId)
         {
             var attendanceList = from record in dbContext.AttendanceDetails
                                  where record.EmpId == EmployeeId && record.TimeOut != null
@@ -107,12 +107,11 @@ namespace EF_HRportal_WebAPI.Repository
                                      TotalDuration = a.Sum(x => x.Duration)
                                  };
             var AttendanceList = await attendanceList.ToListAsync();
-            //return AttendanceList;
-            var FinalAttendanceList = new List<AttendanceSummaryDTO>();
+            var FinalAttendanceList = new List<AttendanceSummaryDto>();
             foreach (var attendance in AttendanceList)
             {
                 string duration = attendance.TotalDuration / 60 + "hrs : " + attendance.TotalDuration % 60 + "min";
-                var formattedAttendance = new AttendanceSummaryDTO
+                var formattedAttendance = new AttendanceSummaryDto
                 {
                     Date = attendance.Date.ToShortDateString(),
                     TotalDuration = duration
@@ -183,7 +182,7 @@ namespace EF_HRportal_WebAPI.Repository
             return attendanceRecord;
         }
 
-        public async Task<Employeedetail> UpdateEmployeeDetailsAsync(Employeedetail? employeeDetails, UpdateEmployeeByHRRequestDTO newDetails)
+        public async Task<Employeedetail> UpdateEmployeeDetailsAsync(Employeedetail employeeDetails, UpdateEmployeeByHRRequestDto newDetails)
         {
             employeeDetails.Name = newDetails.Name;
             employeeDetails.Phone = newDetails.Phone;
@@ -195,7 +194,7 @@ namespace EF_HRportal_WebAPI.Repository
             return employeeDetails;
         }
 
-        public async Task<Employeedetail> UpdatePersonalDetailsAsync( Employeedetail employeeDetails, UpdatePersonalDetailsDTO newDetails)
+        public async Task<Employeedetail> UpdatePersonalDetailsAsync( Employeedetail employeeDetails, UpdatePersonalDetailsDto newDetails)
         {
             employeeDetails.Name = newDetails.Name;
             employeeDetails.Phone = newDetails.Phone;

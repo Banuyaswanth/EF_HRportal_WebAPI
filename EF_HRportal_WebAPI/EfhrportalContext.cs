@@ -29,10 +29,10 @@ public partial class EfhrportalContext : DbContext
     public virtual DbSet<Timelinedetail> Timelinedetails { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) {
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
-        optionsBuilder.UseSqlServer("Data Source=DESKTOP-7R5H7B7\\SQLEXPRESS;Initial Catalog=EFHRportal;Integrated Security=True;TrustServerCertificate=True");
         optionsBuilder.UseLazyLoadingProxies();
     }
+    /*removed the OnModelCreatingPartial(modelBuilder) method call in OnModelCreating and removed its partial implementation as well because
+    there is no implementation to the OnModelCreatingPartial method*/
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Admindetail>(entity =>
@@ -195,9 +195,5 @@ public partial class EfhrportalContext : DbContext
                 .HasForeignKey(d => d.EmpId)
                 .HasConstraintName("FK_timelinedetails_employeedetails");
         });
-
-        OnModelCreatingPartial(modelBuilder);
     }
-
-    partial void OnModelCreatingPartial(ModelBuilder modelBuilder);
 }
