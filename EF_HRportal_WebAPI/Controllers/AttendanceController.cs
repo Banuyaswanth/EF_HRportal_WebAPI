@@ -34,16 +34,17 @@ namespace EF_HRportal_WebAPI.Controllers
                 var oldTimeInDetails = await repository.GetAttendanceRecordAsync(EmpId);
                 if (oldTimeInDetails != null)
                 {
-                    return StatusCode(StatusCodes.Status405MethodNotAllowed, localizer["MultipleTimeIn", EmpId].Value);
+                    //return BadRequest(localizer["MultipleTimeIn", EmpId].Value);
+                    return BadRequest();
                 }
                 var newTimeInDetails = await repository.EmployeeTimeInAsync(EmpId);
                 if (newTimeInDetails != null)
                 {
-                    return Ok(new { lastTimeInId = newTimeInDetails.Id, Message = localizer["TimeInMsg", newTimeInDetails.Id].Value });
+                    return Ok(newTimeInDetails);
                 }
-                return Ok(localizer["TimeInFailure"].Value);
+                return BadRequest(localizer["TimeInFailure"].Value);
             }
-            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+            return BadRequest(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
 
         /*This API will accept the Employee ID and the LastTimeInID that is returned by the TimeIN API
