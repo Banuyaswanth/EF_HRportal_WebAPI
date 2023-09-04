@@ -37,7 +37,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 var timeLineDetailsDTO = mapper.Map<List<TimelineDetailsDto>>(timeLineDetails);
                 return Ok(timeLineDetailsDTO);
             }
-            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+            return BadRequest(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
     }
 }

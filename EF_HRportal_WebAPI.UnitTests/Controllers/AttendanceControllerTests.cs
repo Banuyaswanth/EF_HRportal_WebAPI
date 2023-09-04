@@ -31,7 +31,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             sut = new AttendanceController(serviceMock.Object,localizerMock.Object);
         }
 
-        //TimeIn Action Method Unit Tests
+        //TimeIn Action Method Unit Test cases
         [Fact]
         public async Task TimeIn_ShouldReturnOkResponse_WhenEmployeeWithNoNullTimeOutDetailsFound()
         {
@@ -117,7 +117,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
         }
 
 
-        //TimeOut Action Method Unit Tests
+        //TimeOut Action Method Unit Test cases
         [Fact]
         public async Task TimeOut_ShouldReturnOkResponse_WhenEmployeeAttendanceRecordFoundWithTimeOutAsNull()
         {
@@ -171,7 +171,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             Assert.Equal($"Employee with given ID = {empId} does not exist!!", badRequestResult.Value);
         }
 
-        //GetAttendance Action Method Unit Tests
+        //GetAttendance Action Method Unit Test cases
         [Fact]
         public async Task GetAttendance_ShouldReturnOkResponse_WhenEmployeeWithAttendanceRecordsFound()
         {
@@ -197,7 +197,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
         {
             var empId = fixture.Create<int>();
             var employeeDetails = fixture.Create<Employeedetail>();
-            List<AttendanceSummaryDto> attendance = new List<AttendanceSummaryDto> { };
+            List<AttendanceSummaryDto> attendance = new() { };
             serviceMock.Setup(x => x.GetEmployeeByIdAsync(empId)).ReturnsAsync(employeeDetails);
             serviceMock.Setup(x => x.GetAttendanceOfEmployeeAsync(empId)).ReturnsAsync(attendance);
 

@@ -51,7 +51,7 @@ namespace EF_HRportal_WebAPI.Controllers
             var employeesDomainList = await repository.SearchEmployeeByNameAsync(Name ?? "");
             if (employeesDomainList.Count == 0)
             {
-                return Ok(localizer["EmployeeNameSearchFail",Name ?? ""].Value);
+                return NotFound(localizer["EmployeeNameSearchFail",Name ?? ""].Value);
             }
             var employeesDTOList = mapper.Map<List<EmployeeDetailsDto>>(employeesDomainList);
             return Ok(employeesDTOList);
@@ -68,7 +68,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 var PersonalDetails = mapper.Map<PersonalDetailsDto>(Employee);
                 return Ok(PersonalDetails);
             }
-            return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
+            return BadRequest(localizer["EmployeeDoesNotExist", EmpId].Value);
         }
 
         /*This API will update the personal details(only name or phone) of the employee
