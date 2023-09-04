@@ -23,7 +23,7 @@ namespace EF_HRportal_WebAPI.Repository
         Task<Employeedetail> UpdatePersonalDetailsAsync(Employeedetail employeeDetails, UpdatePersonalDetailsDto newDetails);
         Task<Employeedetail> ChangeEmployeePasswordAsync(Employeedetail employeeDetails, ChangePasswordRequestDto newCredentials);
         Task<List<Timelinedetail>> GetTimeLineAsync(int EmpId);
-        Task<AttendanceDetail> EmployeeTimeInAsync(int EmpId);
+        Task<AttendanceDetail?> EmployeeTimeInAsync(int EmpId);
         Task<AttendanceDetail> EmployeeTimeOutAsync(AttendanceDetail attendanceRecord);
         Task<AttendanceDetail> SetDurationAsync(AttendanceDetail attendanceRecord);
         Task<AttendanceDetail?> GetAttendanceRecordAsync(int EmpId);

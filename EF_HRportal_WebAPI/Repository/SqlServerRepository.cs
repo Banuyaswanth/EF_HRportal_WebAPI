@@ -61,7 +61,7 @@ namespace EF_HRportal_WebAPI.Repository
             return employeeDetails;
         }
 
-        public async Task<AttendanceDetail> EmployeeTimeInAsync(int EmpId)
+        public async Task<AttendanceDetail?> EmployeeTimeInAsync(int EmpId)
         {
             var newTimeIn = new AttendanceDetail
             {

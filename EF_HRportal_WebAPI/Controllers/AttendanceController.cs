@@ -34,13 +34,12 @@ namespace EF_HRportal_WebAPI.Controllers
                 var oldTimeInDetails = await repository.GetAttendanceRecordAsync(EmpId);
                 if (oldTimeInDetails != null)
                 {
-                    //return BadRequest(localizer["MultipleTimeIn", EmpId].Value);
-                    return BadRequest();
+                    return BadRequest(localizer["MultipleTimeIn", EmpId].Value);
                 }
                 var newTimeInDetails = await repository.EmployeeTimeInAsync(EmpId);
                 if (newTimeInDetails != null)
                 {
-                    return Ok(newTimeInDetails);
+                    return Ok(new { lastTimeInId = newTimeInDetails.Id, Message = localizer["TimeInMsg", newTimeInDetails.Id].Value });
                 }
                 return BadRequest(localizer["TimeInFailure"].Value);
             }
@@ -61,9 +60,9 @@ namespace EF_HRportal_WebAPI.Controllers
                     var updatedAttendanceRecord = await repository.EmployeeTimeOutAsync(attendanceRecord);
                     return Ok(updatedAttendanceRecord);
                 }
-                return Ok(localizer["TimeOutRecordNotFound", EmpId].Value);
+                return BadRequest(localizer["TimeOutRecordNotFound", EmpId].Value);
             }
-            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+            return BadRequest(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
 
         //This API will return the summary of the attendance of the Employee whose ID is provided in the Route
@@ -80,7 +79,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 }
                 return Ok(attendance);
             }
-            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+            return BadRequest(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
     }
 }
