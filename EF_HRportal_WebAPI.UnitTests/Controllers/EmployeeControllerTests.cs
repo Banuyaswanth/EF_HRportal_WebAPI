@@ -113,7 +113,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
         public async Task SearchEmployee_ShouldReturnNotFoundResponse_WhenEmployeesNotFoundWithNameIncludingGivenInput()
         {
             var Name = "Name";
-            List<Employeedetail> employeedetailsList = new List<Employeedetail> { };
+            List<Employeedetail> employeedetailsList = new() { };
             serviceMock.Setup(x => x.SearchEmployeeByNameAsync(Name)).ReturnsAsync(employeedetailsList);
             localizerMock.Setup(loc => loc["EmployeeNameSearchFail", Name ?? ""]).Returns(new LocalizedString("EmployeeNameSearchFail", $"Could not find any Employee with the given name '{Name}'"));
 
@@ -186,6 +186,124 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             var okObjectResult = (OkObjectResult)result;
             var response = (dynamic)okObjectResult.Value;
             Assert.Equal(updatedPersonalDetailsResult.ToString(), response.ToString());
+        }
+
+        [Fact]
+        public async Task UpdatePersonalDetails_ShouldReturnBadRequest_WhenEmployeeWithGivenIdNotFound()
+        {
+            var empId = fixture.Create<int>();
+            Employeedetail? employeeDetails = null;
+            var newDetails = fixture.Create<UpdatePersonalDetailsDto>();
+            serviceMock.Setup(x => x.GetEmployeeByIdAsync(empId)).ReturnsAsync(employeeDetails);
+            localizerMock.Setup(loc => loc["EmployeeDoesNotExist",empId]).Returns(new LocalizedString("EmployeeDoesNotExist", $"Employee with given ID = {empId} does not exist!!"));
+
+            var result = await sut.UpdatePersonalDetails(empId,newDetails).ConfigureAwait(false);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            result.Should().NotBeNull();
+            var badRequestResult = (BadRequestObjectResult)result;
+            Assert.Equal($"Employee with given ID = {empId} does not exist!!",badRequestResult.Value);
+        }
+
+        //ChangeLoginPassword Action Method Unit Test cases
+        [Fact]
+        public async Task ChangeLoginPassword_ShouldReturnOkResponse_WhenEmployeeFoundWithGivenIdAndValidNewCredentialsAreProvided()
+        {
+            var empId = fixture.Create<int>();
+            var employeeDetails = fixture.Create<Employeedetail>();
+            employeeDetails.Email = employeeDetails.Email.ToLower();
+            var newCredentials = new ChangePasswordRequestDto { Email = employeeDetails.Email, NewPassword = "xyasdfas", OldPassword = employeeDetails.Password };
+            var updatedEmployeeDetials = fixture.Create<Employeedetail>();
+            var timelineDetail = fixture.Create<Timelinedetail>();
+            serviceMock.Setup(x => x.GetEmployeeByIdAsync(empId)).ReturnsAsync(employeeDetails);
+            serviceMock.Setup(x => x.ChangeEmployeePasswordAsync(employeeDetails,newCredentials)).ReturnsAsync(updatedEmployeeDetials);
+            serviceMock.Setup(x => x.AddTimeLineAsync(timelineDetail)).ReturnsAsync(timelineDetail);
+
+            localizerMock.Setup(loc => loc["EmployeeLoginPasswordChangeSuccess", empId]).Returns(new LocalizedString("EmployeeLoginPasswordChangeSuccess", $"Successfully changed the password of Employee login for Employee with ID = {empId}"));
+
+            var result = await sut.ChangeLoginPassword(empId,newCredentials).ConfigureAwait(false);
+
+            Assert.IsType<OkObjectResult>(result);
+            result.Should().NotBeNull();
+            var okObjectResult = (OkObjectResult)result;
+            Assert.Equal($"Successfully changed the password of Employee login for Employee with ID = {empId}", okObjectResult.Value);
+        }
+
+        [Fact]
+        public async Task ChangeLoginPassword_ShouldReturnBadRequest_WhenEmployeeWithGivenIdNotFound()
+        {
+            var empId = fixture.Create<int>();
+            Employeedetail? employeedetails = null;
+            var newCredentials = fixture.Create<ChangePasswordRequestDto>();
+            serviceMock.Setup(x => x.GetEmployeeByIdAsync(empId)).ReturnsAsync(employeedetails);
+
+            localizerMock.Setup(loc => loc["EmployeeDoesNotExist", empId]).Returns(new LocalizedString("EmployeeDoesNotExist", $"Employee with given ID = {empId} does not exist!!"));
+
+            var result = await sut.ChangeLoginPassword(empId, newCredentials).ConfigureAwait(false);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            result.Should().NotBeNull();
+            var badRequestResult = (BadRequestObjectResult)result;
+            Assert.Equal($"Employee with given ID = {empId} does not exist!!",badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task ChangeLoginPassword_ShouldReturnBadRequest_WhenInvalidEmailIsProvided()
+        {
+            var empId = fixture.Create<int>();
+            var employeeDetails = fixture.Create<Employeedetail>();
+            var newCredentials = new ChangePasswordRequestDto { Email = "abc" };
+
+            serviceMock.Setup(x => x.GetEmployeeByIdAsync(empId)).ReturnsAsync(employeeDetails);
+
+            localizerMock.Setup(loc => loc["InvalidEmail"]).Returns(new LocalizedString("InvalidEmail", "Invalid Email Entered..!!"));
+
+            var result = await sut.ChangeLoginPassword(empId, newCredentials).ConfigureAwait(false);
+            
+            Assert.IsType<BadRequestObjectResult>(result);
+            result.Should().NotBeNull();
+            var badRequestResult = (BadRequestObjectResult)result;
+            Assert.Equal("Invalid Email Entered..!!", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task ChangeLoginPassword_ShouldReturnBadRequest_WhenInvalidOldPasswordIsProvided()
+        {
+            var empId = fixture.Create<int>();
+            var employeeDetails = fixture.Create<Employeedetail>();
+            employeeDetails.Email = employeeDetails.Email.ToLower();
+            var newCredentials = new ChangePasswordRequestDto { Email = employeeDetails.Email, OldPassword = "abdasdfasdfa" };
+
+            serviceMock.Setup(x => x.GetEmployeeByIdAsync(empId)).ReturnsAsync(employeeDetails);
+
+            localizerMock.Setup(loc => loc["IncorrectOldPassword"]).Returns(new LocalizedString("IncorrectOldPassword", "Incorrect Old Password. Provide the correct old password!!"));
+
+            var result = await sut.ChangeLoginPassword(empId, newCredentials).ConfigureAwait(false);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            result.Should().NotBeNull();
+            var badRequestResult = (BadRequestObjectResult)result;
+            Assert.Equal("Incorrect Old Password. Provide the correct old password!!", badRequestResult.Value);
+        }
+
+        [Fact]
+        public async Task ChangeLoginPassword_ShouldReturnBadRequest_WhenInvalidNewPasswordIsProvided()
+        {
+            var empId = fixture.Create<int>();
+            var employeeDetails = fixture.Create<Employeedetail>();
+            employeeDetails.Email = employeeDetails.Email.ToLower();
+            var newCredentials = new ChangePasswordRequestDto { Email = employeeDetails.Email, OldPassword = employeeDetails.Password, NewPassword = employeeDetails.Password };
+
+            serviceMock.Setup(x => x.GetEmployeeByIdAsync(empId)).ReturnsAsync(employeeDetails);
+
+            localizerMock.Setup(loc => loc["DifferentNewAndOldPasswords"]).Returns(new LocalizedString("DifferentNewAndOldPasswords", "New Password cannot be the same as Old Password. Try giving a different New Password."));
+
+            var result = await sut.ChangeLoginPassword(empId, newCredentials).ConfigureAwait(false);
+
+            Assert.IsType<BadRequestObjectResult>(result);
+            result.Should().NotBeNull();
+            var badRequestResult = (BadRequestObjectResult)result;
+            Assert.Equal("New Password cannot be the same as Old Password. Try giving a different New Password.", badRequestResult.Value);
         }
     }
 }

@@ -92,7 +92,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 await repository.AddTimeLineAsync(timeLineAction);
                 return Ok(new { Message = localizer["PersonalDetailsUpdationSuccess", EmpId].Value, UpdatedDetails = updatedEmployeeDTO });
             }
-            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+            return BadRequest(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
 
         /*This API will change the login password of the Employee login
@@ -106,15 +106,15 @@ namespace EF_HRportal_WebAPI.Controllers
             {
                 if (Employee.Email != newCredentials.Email.ToLower())
                 {
-                    return Ok(localizer["InvalidEmail"].Value);
+                    return BadRequest(localizer["InvalidEmail"].Value);
                 }
                 if (Employee.Password != newCredentials.OldPassword)
                 {
-                    return Ok(localizer["IncorrectOldPassword"].Value);
+                    return BadRequest(localizer["IncorrectOldPassword"].Value);
                 }
                 if (Employee.Password == newCredentials.NewPassword)
                 {
-                    return Ok(localizer["DifferentNewAndOldPasswords"].Value);
+                    return BadRequest(localizer["DifferentNewAndOldPasswords"].Value);
                 }
                 await repository.ChangeEmployeePasswordAsync(Employee, newCredentials);
                 var timeLineAction = new Timelinedetail
@@ -126,7 +126,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 await repository.AddTimeLineAsync(timeLineAction);
                 return Ok(localizer["EmployeeLoginPasswordChangeSuccess", EmpId].Value);
             }
-            return Ok(localizer["EmployeeDoesNotExist",EmpId].Value);
+            return BadRequest(localizer["EmployeeDoesNotExist",EmpId].Value);
         }
     }
 }

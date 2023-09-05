@@ -39,11 +39,11 @@ namespace EF_HRportal_WebAPI.Controllers
             {
                 if (adminDomain.Password != loginDetails.Password)
                 {
-                    return Ok(localizer["InvalidPassword"].Value);
+                    return BadRequest(localizer["InvalidPassword"].Value);
                 }
                 return Ok(localizer["LoginSuccessful"].Value);
             }
-            return Ok(localizer["InvalidEmail"].Value);
+            return BadRequest(localizer["InvalidEmail"].Value);
         }
 
         /*This API changes the login password of the Admin/HR Login portal
@@ -57,15 +57,15 @@ namespace EF_HRportal_WebAPI.Controllers
             {
                 if (HR.Email != newHRcredentialsDTO.Email.ToLower())
                 {
-                    return Ok(localizer["InvalidEmail"]);
+                    return BadRequest(localizer["InvalidEmail"].Value);
                 }
                 if (HR.Password != newHRcredentialsDTO.OldPassword)
                 {
-                    return Ok(localizer["IncorrectOldPassword"].Value);
+                    return BadRequest(localizer["IncorrectOldPassword"].Value);
                 }
                 if (HR.Password == newHRcredentialsDTO.NewPassword)
                 {
-                    return Ok(localizer["DifferentNewAndOldPasswords"].Value);
+                    return BadRequest(localizer["DifferentNewAndOldPasswords"].Value);
                 }
                 await repository.ChangeHRPasswordAsync(HR, newHRcredentialsDTO);
                 var timeLineAction = new Timelinedetail
@@ -75,9 +75,9 @@ namespace EF_HRportal_WebAPI.Controllers
                     DateOfAction = DateTime.Now
                 };
                 await repository.AddTimeLineAsync(timeLineAction);
-                return Ok(localizer["HRLoginPasswordChangeSuccess", HR.EmpId]);
+                return Ok(localizer["HRLoginPasswordChangeSuccess", HR.EmpId].Value);
             }
-            return Ok(localizer["HRDoNotExist",HRid].Value);
+            return BadRequest(localizer["HRDoNotExist",HRid].Value);
         }
 
         /*This API will create a new Employee and returns EmployeeDetailsDTO of the newly created employee
@@ -97,12 +97,12 @@ namespace EF_HRportal_WebAPI.Controllers
                 var Department = await repository.GetDepartmentByIdAsync(createEmployeeDTO.Department);
                 if (Department == null)
                 {
-                    return Ok(localizer["DepartmentDoesNotExist", createEmployeeDTO.Department]);
+                    return NotFound(localizer["DepartmentDoesNotExist", createEmployeeDTO.Department].Value);
                 }
                 var manager = await repository.GetManagerByIdAsync(createEmployeeDTO.ManagerId);
                 if (manager == null)
                 {
-                    return Ok(localizer["ManagerDoesNotExist", createEmployeeDTO.ManagerId]);
+                    return NotFound(localizer["ManagerDoesNotExist", createEmployeeDTO.ManagerId].Value);
                 }
                 var employeeDetailsDomain = mapper.Map<Employeedetail>(createEmployeeDTO);
                 employeeDetailsDomain.Email = createEmployeeDTO.Email.ToLower();
@@ -115,8 +115,8 @@ namespace EF_HRportal_WebAPI.Controllers
                 };
                 await repository.AddTimeLineAsync(timeLineAction);
                 var newEmployeeDTO = mapper.Map<EmployeeDetailsDto>(newEmployeeDomain);
-                return StatusCode(StatusCodes.Status201Created, newEmployeeDTO);
-            }return Ok(localizer["HRDoNotExist",HRid]);           
+                return CreatedAtAction(nameof(CreateEmployee), newEmployeeDTO);
+            }return BadRequest(localizer["HRDoNotExist",HRid].Value);           
         }
 
         //This API will return a list of EmployeeDetailDTO's of all the employees present in the database
@@ -143,7 +143,7 @@ namespace EF_HRportal_WebAPI.Controllers
                 var employeeDTO = mapper.Map<EmployeeDetailsDto>(employeeDomain);
                 return Ok(employeeDTO);
             }
-            return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
+            return NotFound(localizer["EmployeeDoesNotExist", EmpId].Value);
         }
 
         /*This API will delete the Employee from the database.
@@ -171,9 +171,9 @@ namespace EF_HRportal_WebAPI.Controllers
                     await repository.AddTimeLineAsync(timeLineAction);
                     return Ok(new { Message = localizer["EmployeeDeletionSuccess"].Value, deletedEmployeeDetails = deletedEmployeeDTO });
                 }
-                return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
+                return BadRequest(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
-            return Ok(localizer["HRDoNotExist",HRid].Value);
+            return BadRequest(localizer["HRDoNotExist",HRid].Value);
         }
 
         /*This API is used to update the details of the employee
@@ -208,13 +208,13 @@ namespace EF_HRportal_WebAPI.Controllers
                             var updatedEmployeeDTO = mapper.Map<EmployeeDetailsDto>(updatedEmployeeDomain);
                             return Ok(new { msg = localizer["EmployeeDetailsUpdationSuccess", updatedEmployeeDTO.Id].Value, updatedEmployeeDTO });
                         }
-                        return Ok(localizer["ManagerDoesNotExist", newDetails.ManagerId].Value);
+                        return NotFound(localizer["ManagerDoesNotExist", newDetails.ManagerId].Value);
                     }
-                    return Ok(localizer["DepartmentDoesNotExist", newDetails.Department].Value);
+                    return NotFound(localizer["DepartmentDoesNotExist", newDetails.Department].Value);
                 }
-                return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
+                return BadRequest(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
-            return Ok(localizer["HRDoNotExist", HRid].Value);
+            return BadRequest(localizer["HRDoNotExist", HRid].Value);
         }
 
         /*This API will return the list of EmployeeDetailsDTO's of the employees reporting to the 
@@ -228,12 +228,12 @@ namespace EF_HRportal_WebAPI.Controllers
                 var EmployeesListDomain = await repository.GetAllEmployeesUnderManagerAsync(ManagerId);
                 if (EmployeesListDomain.Count == 0)
                 {
-                    Ok(localizer["NoEmployees"].Value);
+                    return Ok(localizer["NoEmployees"].Value);
                 }
                 var EmployeeListDTO = mapper.Map<List<EmployeeDetailsDto>>(EmployeesListDomain);
                 return Ok(EmployeeListDTO);
             }
-            return Ok(localizer["ManagerDoesNotExist",ManagerId].Value);
+            return BadRequest(localizer["ManagerDoesNotExist",ManagerId].Value);
         }
 
         /*This API will Add an employee as a manager
@@ -260,9 +260,9 @@ namespace EF_HRportal_WebAPI.Controllers
                     await repository.AddTimeLineAsync(timeLineAction);
                     return StatusCode(StatusCodes.Status201Created, newManagerDTO);
                 }
-                return Ok(localizer["EmployeeDoesNotExist", EmpId].Value);
+                return BadRequest(localizer["EmployeeDoesNotExist", EmpId].Value);
             }
-            return Ok(localizer["HRDoNotExist",HRid].Value);
+            return BadRequest(localizer["HRDoNotExist",HRid].Value);
         }
     }
 }
