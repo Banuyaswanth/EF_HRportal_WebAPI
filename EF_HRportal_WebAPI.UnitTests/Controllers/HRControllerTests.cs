@@ -212,7 +212,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             result.Should().NotBeNull();
             var createdAtActionResult = (CreatedAtActionResult)result;
             Assert.Equal(StatusCodes.Status201Created, createdAtActionResult.StatusCode);
-            Assert.Equal(employeeDetailDto.ToString(), createdAtActionResult.Value.ToString());
+            Assert.Equal(employeeDetailDto.ToString(), (createdAtActionResult.Value ?? "").ToString());
         }
 
         [Fact]
@@ -250,7 +250,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             result.Should().NotBeNull();
             var objectResult = (ObjectResult)result;
             Assert.Equal(StatusCodes.Status409Conflict, objectResult.StatusCode);
-            Assert.Equal(new { Message = "Email is already in use..!! Try using a different Email" }.ToString(), objectResult.Value.ToString());
+            Assert.Equal(new { Message = "Email is already in use..!! Try using a different Email" }.ToString(), (objectResult.Value ?? "").ToString());
         }
 
         [Fact]
@@ -344,7 +344,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             Assert.IsType<OkObjectResult>(result);
             result.Should().NotBeNull();
             var okObjectResult = (OkObjectResult)result;
-            Assert.Equal(employeeDto.ToString(), okObjectResult.Value.ToString());
+            Assert.Equal(employeeDto.ToString(), (okObjectResult.Value ?? "").ToString());
         }
 
         [Fact]
@@ -387,7 +387,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             Assert.IsType<OkObjectResult>(result);
             result.Should().NotBeNull();
             var okObjectResult = (OkObjectResult)result;
-            Assert.Equal(objectInResult.ToString(), okObjectResult.Value.ToString());
+            Assert.Equal(objectInResult.ToString(), (okObjectResult.Value ?? "").ToString());
         }
 
         [Fact]
@@ -457,7 +457,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             Assert.IsType<OkObjectResult>(result);
             result.Should().NotBeNull();
             var okObjectResult = (OkObjectResult)result;
-            Assert.Equal(resultObject.ToString(), okObjectResult.Value.ToString());
+            Assert.Equal(resultObject.ToString(), (okObjectResult.Value ?? "").ToString());
         }
 
         [Fact]
@@ -626,7 +626,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             result.Should().NotBeNull();
             var objectResult = (ObjectResult)result;
             Assert.Equal(StatusCodes.Status201Created, objectResult.StatusCode);
-            Assert.Equal(mangerDetailsDto.ToString(), objectResult.Value.ToString());
+            Assert.Equal(mangerDetailsDto.ToString(), (objectResult.Value ?? "").ToString());
         }
 
         [Fact]

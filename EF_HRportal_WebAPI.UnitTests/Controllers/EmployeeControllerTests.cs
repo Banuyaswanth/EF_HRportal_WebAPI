@@ -184,7 +184,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             Assert.IsType<OkObjectResult>(result);
             result.Should().NotBeNull();
             var okObjectResult = (OkObjectResult)result;
-            var response = (dynamic)okObjectResult.Value;
+            var response = (dynamic) (okObjectResult.Value ?? "");
             Assert.Equal(updatedPersonalDetailsResult.ToString(), response.ToString());
         }
 

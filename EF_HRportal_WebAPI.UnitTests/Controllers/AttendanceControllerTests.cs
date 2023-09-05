@@ -50,7 +50,7 @@ namespace EF_HRportal_WebAPI.UnitTests.Controllers
             //Act
             var result = await sut.TimeIn(empId).ConfigureAwait(false);
             var okResult = (OkObjectResult)result;
-            var response = (dynamic)okResult.Value;
+            var response = (dynamic) (okResult.Value ?? "");
 
             //Assert
             Assert.NotNull(result);
