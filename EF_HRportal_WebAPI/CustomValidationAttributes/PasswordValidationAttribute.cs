@@ -10,7 +10,7 @@ namespace EF_HRportal_WebAPI.CustomValidationAttributes
         {
             if (value != null)
             {
-                var inputValue = value.ToString();
+                var inputValue = value.ToString() ?? "";
                 if (!inputValue.Any(Char.IsWhiteSpace) && Regex.IsMatch(inputValue, Pattern))
                 {
                     return ValidationResult.Success;

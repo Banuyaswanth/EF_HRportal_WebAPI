@@ -6,7 +6,7 @@ namespace EF_HRportal_WebAPI.CustomValidationAttributes
     {
         protected override ValidationResult? IsValid(object? value, ValidationContext validationContext)
         {
-            var isValidValue = int.TryParse(value.ToString(), out var Salary);
+            var isValidValue = int.TryParse((value ?? "").ToString(), out var Salary);
             if(isValidValue)
             {
                 if (Salary >= 300000)

@@ -24,7 +24,7 @@ namespace EF_HRportal_WebAPI.Repository
             var newManager = new Managerdetail
             {
                 ManagerId = employee.Id,
-                Department = employee.Department
+                Department = employee.Department ?? "Exec"
             };
             await dbContext.Managerdetails.AddAsync(newManager);
             await dbContext.SaveChangesAsync();
@@ -175,7 +175,7 @@ namespace EF_HRportal_WebAPI.Repository
 
         public async Task<AttendanceDetail> SetDurationAsync(AttendanceDetail attendanceRecord)
         {
-            TimeSpan? duration = attendanceRecord.TimeOut.Value - attendanceRecord.TimeIn;
+            TimeSpan? duration = attendanceRecord.TimeOut - attendanceRecord.TimeIn;
             attendanceRecord.Duration = (int)duration.Value.TotalMinutes;
             dbContext.Entry(attendanceRecord).State = EntityState.Modified;
             await dbContext.SaveChangesAsync();
